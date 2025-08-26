@@ -46,11 +46,15 @@ def init_removers():
     global ultra_remover, advanced_remover, UltraClothingBgRemover, AdvancedClothingBgRemover
     
     # Production'da mock mode kullan (memory limit için)
-    USE_MOCK_MODE = os.environ.get('USE_MOCK_MODE', 'true').lower() == 'true'
+    mock_env = os.environ.get('USE_MOCK_MODE', 'true')
+    USE_MOCK_MODE = mock_env.lower() in ['true', '1', 'yes']
+    print(f"🔧 Environment variable USE_MOCK_MODE: '{mock_env}' -> Mock mode: {USE_MOCK_MODE}")
     
     if USE_MOCK_MODE:
         print("⚠️ Mock mode aktif - AI modelleri yüklenmedi (memory optimization)")
         return
+    else:
+        print("🚀 Real AI mode aktif - AI modelleri yüklenecek")
     
     try:
         # AI modelleri dinamik olarak import et
