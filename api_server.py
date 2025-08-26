@@ -404,57 +404,67 @@ def index():
     """
     Ana sayfa - API dokümantasyonu
     """
-    docs = """
-    <h1>🚀 Kıyafet Arka Plan Kaldırıcı API</h1>
-    
-    <h2>📡 Endpoint'ler:</h2>
-    
-    <h3>GET /health</h3>
-    <p>Server durumu kontrolü</p>
-    
-    <h3>GET /api/models</h3>
-    <p>Mevcut AI modellerini listele</p>
-    
-    <h3>POST /api/remove-background</h3>
-    <p>Arka plan kaldırma (multipart/form-data)</p>
-    <p><strong>Parametreler:</strong></p>
-    <ul>
-        <li>image: Görüntü dosyası</li>
-        <li>model: ultra|advanced (default: ultra)</li>
-        <li>positioning: smart|center (default: smart)</li>
-        <li>variants: true|false (default: true)</li>
-        <li>enhance: true|false (default: true)</li>
-    </ul>
-    
-    <h3>POST /api/remove-background-base64</h3>
-    <p>Base64 formatında arka plan kaldırma (iOS için)</p>
-    <p><strong>JSON Parametreler:</strong></p>
-    <ul>
-        <li>image_base64: Base64 encoded görüntü</li>
-        <li>model: ultra|advanced</li>
-        <li>positioning: smart|center</li>
-    </ul>
-    
-    <h3>GET /api/download/&lt;filename&gt;</h3>
-    <p>İşlenmiş dosyaları indir</p>
-    
-    <h3>GET /api/preview/&lt;filename&gt;</h3>
-    <p>İşlenmiş dosyaları görüntüle</p>
-    
-    <h2>🤖 AI Modeller:</h2>
-    <ul>
-        <li><strong>ULTRA:</strong> En gelişmiş AI modelleri (isnet-general-use, sam)</li>
-        <li><strong>Advanced:</strong> Boyut düzeltmeli model (u2net_cloth_seg)</li>
-    </ul>
-    
-    <h2>📱 iOS Kullanım Örneği:</h2>
-    <pre>
-    curl -X POST http://localhost:5001/api/remove-background-base64 \\
-         -H "Content-Type: application/json" \\
-         -d '{"image_base64": "iVBORw0KGgoAAAANS...", "model": "ultra", "positioning": "smart"}'
-    </pre>
-    """
-    return docs
+    docs = {
+        'api_name': 'Kıyafet Arka Plan Kaldırıcı API',
+        'version': '1.0.0',
+        'endpoints': {
+            '/health': {
+                'method': 'GET',
+                'description': 'API sağlık kontrolü',
+                'example': 'GET /health'
+            },
+            '/api/remove-background': {
+                'method': 'POST',
+                'description': 'Görüntünün arka planını kaldır (multipart/form-data)',
+                'parameters': {
+                    'image': 'Görüntü dosyası (PNG, JPG)',
+                    'model': 'ultra veya advanced (varsayılan: ultra)',
+                    'positioning': 'smart veya center (varsayılan: smart)',
+                    'enhance': 'true veya false (varsayılan: false)'
+                },
+                'example': """
+                curl -X POST https://cloth-segmentation-api.onrender.com/api/remove-background \\
+                  -F "image=@image.jpg" \\
+                  -F "model=ultra" \\
+                  -F "positioning=smart"
+                """
+            },
+            '/api/remove-background-base64': {
+                'method': 'POST',
+                'description': 'Base64 formatında görüntünün arka planını kaldır (iOS için)',
+                'parameters': {
+                    'image_base64': 'Base64 encoded görüntü',
+                    'model': 'ultra veya advanced',
+                    'positioning': 'smart veya center'
+                },
+                'example': """
+                curl -X POST https://cloth-segmentation-api.onrender.com/api/remove-background-base64 \\
+                  -H "Content-Type: application/json" \\
+                  -d '{"image_base64": "BASE64_IMAGE_DATA", "model": "ultra"}'
+                """
+            }
+        },
+        'swift_example': """
+        // Swift örnek kod
+        let url = URL(string: "https://cloth-segmentation-api.onrender.com/api/remove-background-base64")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let parameters: [String: Any] = [
+            "image_base64": imageBase64String,
+            "model": "ultra",
+            "positioning": "smart"
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            // Handle response
+        }.resume()
+        """
+    }
+    return jsonify(docs)
 
 if __name__ == '__main__':
     # Başlangıçta modelleri yükle
