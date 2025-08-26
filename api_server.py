@@ -459,5 +459,6 @@ def index():
 if __name__ == '__main__':
     # Başlangıçta modelleri yükle
     init_removers()
-    print(f"💡 Durdurmak için: Ctrl+C")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    print(f"💡 Server starting on port {port}")
+    app.run(host='0.0.0.0', port=port)
