@@ -1,0 +1,24 @@
+{
+  "model": "u2net_cloth_seg",
+  "enhance_settings": {
+    "contrast_factor": 1.2,
+    "brightness_factor": 1.1,
+    "sharpness_factor": 1.15
+  },
+  "shadow_settings": {
+    "offset_x": 10,
+    "offset_y": 15,
+    "blur_radius": 15,
+    "opacity": 100
+  },
+  "output_settings": {
+    "format": "PNG",
+    "quality": 95,
+    "add_timestamp": false
+  },
+  "batch_settings": {
+    "supported_formats": [".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"],
+    "auto_create_folders": true,
+    "preserve_original": true
+  }
+}
