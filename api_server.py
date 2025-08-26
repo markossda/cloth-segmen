@@ -404,15 +404,105 @@ def index():
     """
     Ana sayfa - API dokümantasyonu
     """
-    docs = {
-        'api_name': 'Kıyafet Arka Plan Kaldırıcı API',
-        'version': '1.0.0',
-        'endpoints': {
-            '/health': {
-                'method': 'GET',
-                'description': 'API sağlık kontrolü',
-                'example': 'GET /health'
-            },
+    docs_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Kıyafet Arka Plan Kaldırıcı API</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2em; max-width: 800px; margin: 0 auto; }
+            h1 { color: #2c3e50; }
+            h2 { color: #34495e; margin-top: 1.5em; }
+            pre { background: #f8f9fa; padding: 1em; border-radius: 4px; overflow-x: auto; }
+            .endpoint { background: #fff; padding: 1em; margin: 1em 0; border-radius: 4px; border: 1px solid #e9ecef; }
+            .method { font-weight: bold; color: #2ecc71; }
+            .url { color: #3498db; }
+            .param { margin-left: 1em; }
+            .example { margin-top: 1em; }
+            .note { background: #fff3cd; padding: 1em; border-radius: 4px; margin: 1em 0; }
+        </style>
+    </head>
+    <body>
+        <h1>🚀 Kıyafet Arka Plan Kaldırıcı API</h1>
+        
+        <div class="note">
+            <strong>Not:</strong> Bu bir RESTful API servisidir. Kullanım için HTTP istekleri yapmanız gerekir.
+        </div>
+
+        <h2>📡 Endpoints</h2>
+
+        <div class="endpoint">
+            <h3>Sağlık Kontrolü</h3>
+            <p><span class="method">GET</span> <span class="url">/health</span></p>
+            <div class="example">
+                <strong>Örnek:</strong>
+                <pre>curl https://cloth-segmentation-api.onrender.com/health</pre>
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <h3>Arka Plan Kaldırma (Form Data)</h3>
+            <p><span class="method">POST</span> <span class="url">/api/remove-background</span></p>
+            <p>Parametreler:</p>
+            <div class="param">
+                <code>image</code>: Görüntü dosyası (PNG, JPG)<br>
+                <code>model</code>: ultra veya advanced (varsayılan: ultra)<br>
+                <code>positioning</code>: smart veya center (varsayılan: smart)<br>
+                <code>enhance</code>: true veya false (varsayılan: false)
+            </div>
+            <div class="example">
+                <strong>Örnek:</strong>
+                <pre>curl -X POST https://cloth-segmentation-api.onrender.com/api/remove-background \\
+    -F "image=@image.jpg" \\
+    -F "model=ultra" \\
+    -F "positioning=smart"</pre>
+            </div>
+        </div>
+
+        <div class="endpoint">
+            <h3>Arka Plan Kaldırma (Base64)</h3>
+            <p><span class="method">POST</span> <span class="url">/api/remove-background-base64</span></p>
+            <p>JSON Parametreler:</p>
+            <div class="param">
+                <code>image_base64</code>: Base64 encoded görüntü<br>
+                <code>model</code>: ultra veya advanced<br>
+                <code>positioning</code>: smart veya center
+            </div>
+            <div class="example">
+                <strong>Örnek:</strong>
+                <pre>curl -X POST https://cloth-segmentation-api.onrender.com/api/remove-background-base64 \\
+    -H "Content-Type: application/json" \\
+    -d '{"image_base64": "BASE64_IMAGE_DATA", "model": "ultra"}'</pre>
+            </div>
+        </div>
+
+        <h2>📱 Swift Örnek Kod</h2>
+        <pre>
+let url = URL(string: "https://cloth-segmentation-api.onrender.com/api/remove-background-base64")!
+var request = URLRequest(url: url)
+request.httpMethod = "POST"
+request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+let parameters: [String: Any] = [
+    "image_base64": imageBase64String,
+    "model": "ultra",
+    "positioning": "smart"
+]
+
+request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
+
+URLSession.shared.dataTask(with: request) { data, response, error in
+    if let data = data {
+        let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let resultBase64 = result?["result_base64"] as? String
+        // resultBase64'ü kullanarak görüntüyü gösterin
+    }
+}.resume()</pre>
+
+    </body>
+    </html>
+    """
+    return docs_html
             '/api/remove-background': {
                 'method': 'POST',
                 'description': 'Görüntünün arka planını kaldır (multipart/form-data)',
