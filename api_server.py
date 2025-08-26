@@ -48,6 +48,14 @@ def init_removers():
     Remover'ları başlat
     """
     global ultra_remover, advanced_remover
+    
+    # Production'da mock mode kullan (memory limit için)
+    USE_MOCK_MODE = os.environ.get('USE_MOCK_MODE', 'true').lower() == 'true'
+    
+    if USE_MOCK_MODE:
+        print("⚠️ Mock mode aktif - AI modelleri yüklenmedi (memory optimization)")
+        return
+    
     try:
         if UltraClothingBgRemover and AdvancedClothingBgRemover:
             print("🤖 AI modelleri yükleniyor...")
@@ -57,7 +65,7 @@ def init_removers():
         else:
             print("⚠️ AI modelleri bulunamadı, mock mode aktif")
     except Exception as e:
-        print(f"❌ Model yükleme hatası: {e}")
+        print(f"❌ Model yükleme hatası: {e}, mock mode aktif")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -178,21 +186,42 @@ def get_available_models():
         'default': 'ultra'
     })
 
-def mock_process_image(filepath, options):
+def mock_process_image(filepath, options=None):
     """
     Mock image processing for testing
     """
     # Basit bir işlem simülasyonu
-    time.sleep(1)  # İşlem zamanı simülasyonu
+    time.sleep(0.5)  # İşlem zamanı simülasyonu (kısa)
     
     # Orijinal dosyayı kopyala ve _processed ekle
     base_name = os.path.splitext(filepath)[0]
     processed_path = f"{base_name}_processed.png"
     
-    # Basit bir PNG oluştur (1x1 şeffaf pixel)
-    from PIL import Image
-    img = Image.new('RGBA', (100, 100), (0, 0, 0, 0))
-    img.save(processed_path)
+    try:
+        # Orijinal resmi aç ve şeffaf arkaplan yap
+        original_img = Image.open(filepath).convert('RGBA')
+        width, height = original_img.size
+        
+        # Mock processing: merkezi nesneyi koru, kenarları şeffaf yap
+        img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+        
+        # Merkezi alanı koru (basit mock)
+        center_x, center_y = width // 2, height // 2
+        margin = min(width, height) // 4
+        
+        # Merkezi kısmı kopyala
+        for x in range(max(0, center_x - margin), min(width, center_x + margin)):
+            for y in range(max(0, center_y - margin), min(height, center_y + margin)):
+                img.putpixel((x, y), original_img.getpixel((x, y)))
+        
+        img.save(processed_path)
+        print(f"📷 Mock processing completed: {processed_path}")
+        
+    except Exception as e:
+        print(f"❌ Mock processing error: {e}")
+        # Fallback: basit şeffaf resim
+        img = Image.new('RGBA', (100, 100), (0, 0, 0, 0))
+        img.save(processed_path)
     
     return processed_path
 
