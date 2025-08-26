@@ -19,13 +19,9 @@ import base64
 # Kendi modüllerimizi import et
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-try:
-    from ultra_clothing_bg_remover import UltraClothingBgRemover
-    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
-except ImportError:
-    print("⚠️ Background remover modules not found. Using mock implementation.")
-    UltraClothingBgRemover = None
-    AdvancedClothingBgRemover = None
+# AI modelleri sadece gerektiğinde import et
+UltraClothingBgRemover = None
+AdvancedClothingBgRemover = None
 
 app = Flask(__name__)
 CORS(app)  # iOS'tan istek gelebilsin
@@ -47,7 +43,7 @@ def init_removers():
     """
     Remover'ları başlat
     """
-    global ultra_remover, advanced_remover
+    global ultra_remover, advanced_remover, UltraClothingBgRemover, AdvancedClothingBgRemover
     
     # Production'da mock mode kullan (memory limit için)
     USE_MOCK_MODE = os.environ.get('USE_MOCK_MODE', 'true').lower() == 'true'
@@ -57,15 +53,21 @@ def init_removers():
         return
     
     try:
-        if UltraClothingBgRemover and AdvancedClothingBgRemover:
-            print("🤖 AI modelleri yükleniyor...")
-            ultra_remover = UltraClothingBgRemover()
-            advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
-            print("✅ AI modelleri hazır!")
-        else:
-            print("⚠️ AI modelleri bulunamadı, mock mode aktif")
+        # AI modelleri dinamik olarak import et
+        print("🔄 AI modüllerini import ediliyor...")
+        from ultra_clothing_bg_remover import UltraClothingBgRemover
+        from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+        print("✅ AI modülleri import edildi")
+        
+        print("🤖 AI modelleri yükleniyor...")
+        ultra_remover = UltraClothingBgRemover()
+        advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
+        print("✅ AI modelleri hazır!")
+        
+    except ImportError as e:
+        print(f"❌ AI modül import hatası: {e} - Mock mode aktif")
     except Exception as e:
-        print(f"❌ Model yükleme hatası: {e}, mock mode aktif")
+        print(f"❌ Model yükleme hatası: {e} - Mock mode aktif")
 
 def allowed_file(filename):
     return '.' in filename and \
