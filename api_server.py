@@ -216,6 +216,8 @@ def remove_background():
     """
     Ana arka plan kaldırma endpoint'i
     """
+    global ultra_remover, advanced_remover
+    
     try:
         # Request validation
         if 'image' not in request.files:
@@ -259,7 +261,6 @@ def remove_background():
                 print("🔄 Lazy loading: Ultra model yükleniyor...")
                 try:
                     from simple_bg_remover import UltraClothingBgRemover
-                    global ultra_remover
                     ultra_remover = UltraClothingBgRemover()
                     print("✅ Ultra model lazy loading tamamlandı")
                 except Exception as e:
@@ -281,7 +282,6 @@ def remove_background():
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
                     from simple_bg_remover import AdvancedClothingBgRemover
-                    global advanced_remover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
@@ -360,6 +360,8 @@ def remove_background_base64():
     """
     Base64 formatında görüntü işleme (iOS için alternatif)
     """
+    global ultra_remover, advanced_remover
+    
     try:
         data = request.get_json()
         
@@ -409,7 +411,6 @@ def remove_background_base64():
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
                     from simple_bg_remover import AdvancedClothingBgRemover
-                    global advanced_remover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
