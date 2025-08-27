@@ -46,24 +46,49 @@ def init_removers():
     global ultra_remover, advanced_remover, UltraClothingBgRemover, AdvancedClothingBgRemover
     
     print("🚀 AI modelleri zorla yükleniyor...")
+    print("💾 Memory usage check - başlangıç")
     
     try:
         # AI modelleri dinamik olarak import et
         print("🔄 AI modüllerini import ediliyor...")
+        print("📦 UltraClothingBgRemover import ediliyor...")
         from ultra_clothing_bg_remover import UltraClothingBgRemover
-        from advanced_clothing_bg_remover import AdvancedClothingBgRemover
-        print("✅ AI modülleri import edildi")
+        print("✅ UltraClothingBgRemover import edildi")
         
-        print("🤖 AI modelleri yükleniyor...")
+        print("📦 AdvancedClothingBgRemover import ediliyor...")
+        from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+        print("✅ AdvancedClothingBgRemover import edildi")
+        
+        print("✅ Tüm AI modülleri import edildi")
+        
+        print("🤖 Ultra AI modeli yükleniyor...")
+        print("⏳ Bu işlem 2-5 dakika sürebilir...")
+        start_time = time.time()
         ultra_remover = UltraClothingBgRemover()
+        ultra_time = time.time() - start_time
+        print(f"✅ Ultra model yüklendi! ({ultra_time:.2f}s)")
+        
+        print("🤖 Advanced AI modeli yükleniyor...")
+        start_time = time.time()
         advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
-        print("✅ AI modelleri hazır!")
+        advanced_time = time.time() - start_time
+        print(f"✅ Advanced model yüklendi! ({advanced_time:.2f}s)")
+        
+        total_time = ultra_time + advanced_time
+        print(f"🎉 Tüm AI modelleri hazır! Toplam süre: {total_time:.2f}s")
+        print("💾 Memory usage check - bitiş")
         
     except ImportError as e:
         print(f"❌ AI modül import hatası: {e}")
+        print("🔍 Import stack trace:")
+        import traceback
+        traceback.print_exc()
         raise e
     except Exception as e:
         print(f"❌ Model yükleme hatası: {e}")
+        print("🔍 Loading stack trace:")
+        import traceback
+        traceback.print_exc()
         raise e
 
 def allowed_file(filename):
@@ -228,13 +253,20 @@ def remove_background():
         
         start_time = time.time()
         
-        # Model seçimi ve işlem - Sadece gerçek AI modelleri
+        # Model seçimi ve işlem - Lazy loading destekli
         if model_type == 'ultra':
             if not ultra_remover:
-                return jsonify({
-                    'success': False,
-                    'error': 'Ultra model yüklenmedi'
-                }), 500
+                print("🔄 Lazy loading: Ultra model yükleniyor...")
+                try:
+                    from ultra_clothing_bg_remover import UltraClothingBgRemover
+                    ultra_remover = UltraClothingBgRemover()
+                    print("✅ Ultra model lazy loading tamamlandı")
+                except Exception as e:
+                    print(f"❌ Ultra model lazy loading hatası: {e}")
+                    return jsonify({
+                        'success': False,
+                        'error': f'Ultra model yüklenemedi: {str(e)}'
+                    }), 500
             options = {
                 'ai_positioning': True,
                 'enhance': enhance,
@@ -245,10 +277,17 @@ def remove_background():
             used_model = ultra_remover.best_model
         elif model_type == 'advanced':
             if not advanced_remover:
-                return jsonify({
-                    'success': False,
-                    'error': 'Advanced model yüklenmedi'
-                }), 500
+                print("🔄 Lazy loading: Advanced model yükleniyor...")
+                try:
+                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+                    advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
+                    print("✅ Advanced model lazy loading tamamlandı")
+                except Exception as e:
+                    print(f"❌ Advanced model lazy loading hatası: {e}")
+                    return jsonify({
+                        'success': False,
+                        'error': f'Advanced model yüklenemedi: {str(e)}'
+                    }), 500
             options = {
                 'preprocess': True,
                 'fix_positioning': True,
@@ -365,10 +404,17 @@ def remove_background_base64():
             used_model = ultra_remover.best_model
         elif model_type == 'advanced':
             if not advanced_remover:
-                return jsonify({
-                    'success': False,
-                    'error': 'Advanced model yüklenmedi'
-                }), 500
+                print("🔄 Lazy loading: Advanced model yükleniyor...")
+                try:
+                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+                    advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
+                    print("✅ Advanced model lazy loading tamamlandı")
+                except Exception as e:
+                    print(f"❌ Advanced model lazy loading hatası: {e}")
+                    return jsonify({
+                        'success': False,
+                        'error': f'Advanced model yüklenemedi: {str(e)}'
+                    }), 500
             options = {
                 'preprocess': True,
                 'fix_positioning': True,
@@ -463,8 +509,42 @@ def preview_file(filename):
             'error': str(e)
         }), 500
 
-# Gunicorn için app seviyesinde model yükleme
-init_removers()
+# Gunicorn için app seviyesinde model yükleme - timeout ile
+import signal
+import sys
+
+def timeout_handler(signum, frame):
+    print("⏰ Model loading timeout - 5 dakika aşıldı!")
+    print("💡 Render.com memory/time limit - Lazy loading kullanılacak")
+    raise TimeoutError("Model loading timeout")
+
+def safe_init_removers():
+    """Timeout korumalı model yükleme"""
+    global ultra_remover, advanced_remover
+    
+    # 5 dakika timeout
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(300)  # 300 saniye = 5 dakika
+    
+    try:
+        init_removers()
+        signal.alarm(0)  # Timeout'u iptal et
+        print("🎉 Models başarıyla yüklendi!")
+    except TimeoutError:
+        signal.alarm(0)
+        print("⚠️ Model loading timeout - Lazy loading moduna geçiliyor")
+        print("📝 Models ilk kullanımda yüklenecek")
+        ultra_remover = None
+        advanced_remover = None
+    except Exception as e:
+        signal.alarm(0)
+        print(f"⚠️ Model loading hatası: {e}")
+        print("📝 Lazy loading moduna geçiliyor")
+        ultra_remover = None
+        advanced_remover = None
+
+# Modelleri güvenli şekilde yükle
+safe_init_removers()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
