@@ -27,13 +27,17 @@ class ClothingBgRemover:
     def process_image(self, input_path):
         """Process image with clothing-specific background removal"""
         try:
+            print(f"🔄 Processing image: {input_path}")
             with open(input_path, 'rb') as f:
                 input_data = f.read()
+            print(f"📏 Input size: {len(input_data)} bytes")
             
             if self.use_ai:
-                print("🤖 AI clothing background removal...")
+                print("🤖 AI clothing background removal starting...")
                 from rembg import remove
+                print("🔄 Running AI model...")
                 output_data = remove(input_data, session=self.session)
+                print(f"✅ AI processing done! Output: {len(output_data)} bytes")
             else:
                 print("⚡ Simple background removal...")
                 # Simple fallback
@@ -41,13 +45,15 @@ class ClothingBgRemover:
                 output_data = io.BytesIO()
                 img.save(output_data, format='PNG')
                 output_data = output_data.getvalue()
+                print(f"✅ Simple processing done! Output: {len(output_data)} bytes")
             
             # Save result
             output_path = input_path.replace('.', '_bg_removed.')
+            print(f"💾 Saving to: {output_path}")
             with open(output_path, 'wb') as f:
                 f.write(output_data)
             
-            print(f"✅ Processing completed: {output_path}")
+            print(f"✅ Processing completed successfully: {output_path}")
             return output_path
             
         except Exception as e:
