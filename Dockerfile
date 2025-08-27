@@ -13,7 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
 
 RUN mkdir -p uploads processed variants
