@@ -522,26 +522,15 @@ def safe_init_removers():
     """Timeout korumalı model yükleme"""
     global ultra_remover, advanced_remover
     
-    # 5 dakika timeout
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(300)  # 300 saniye = 5 dakika
+    print("⚠️ SKIPPING startup model loading - Render.com memory limit")
+    print("📝 Lazy loading moduna direkt geçiliyor")
+    print("🚀 Modeller ilk API çağrısında yüklenecek")
     
-    try:
-        init_removers()
-        signal.alarm(0)  # Timeout'u iptal et
-        print("🎉 Models başarıyla yüklendi!")
-    except TimeoutError:
-        signal.alarm(0)
-        print("⚠️ Model loading timeout - Lazy loading moduna geçiliyor")
-        print("📝 Models ilk kullanımda yüklenecek")
-        ultra_remover = None
-        advanced_remover = None
-    except Exception as e:
-        signal.alarm(0)
-        print(f"⚠️ Model loading hatası: {e}")
-        print("📝 Lazy loading moduna geçiliyor")
-        ultra_remover = None
-        advanced_remover = None
+    # Startup'ta model yükleme yapmıyoruz - sadece lazy loading
+    ultra_remover = None
+    advanced_remover = None
+    
+    print("✅ Server hazır - Models lazy loading mode'da")
 
 # Modelleri güvenli şekilde yükle
 safe_init_removers()
