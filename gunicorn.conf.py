@@ -8,4 +8,5 @@ timeout = 300  # 5 minute timeout for image processing
 keepalive = 5
 max_requests = 100
 max_requests_jitter = 10
-preload_app = True
+preload_app = False  # Lazy loading için false
+graceful_timeout = 60
