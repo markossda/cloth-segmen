@@ -13,10 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+
 ENV PYTHONUNBUFFERED=1
 
 RUN mkdir -p uploads processed variants
 
 EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "300", "api_server:app"]
+CMD ["python", "api_server.py"]
