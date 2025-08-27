@@ -260,7 +260,7 @@ def remove_background():
             if not ultra_remover:
                 print("🔄 Lazy loading: Ultra model yükleniyor...")
                 try:
-                    from simple_bg_remover import UltraClothingBgRemover
+                    from ultra_clothing_bg_remover import UltraClothingBgRemover
                     ultra_remover = UltraClothingBgRemover()
                     print("✅ Ultra model lazy loading tamamlandı")
                 except Exception as e:
@@ -281,7 +281,7 @@ def remove_background():
             if not advanced_remover:
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
-                    from simple_bg_remover import AdvancedClothingBgRemover
+                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
@@ -410,7 +410,7 @@ def remove_background_base64():
             if not advanced_remover:
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
-                    from simple_bg_remover import AdvancedClothingBgRemover
+                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
@@ -523,18 +523,20 @@ def timeout_handler(signum, frame):
     raise TimeoutError("Model loading timeout")
 
 def safe_init_removers():
-    """Timeout korumalı model yükleme"""
+    """Railway'de gerçek AI modelleri yükle"""
     global ultra_remover, advanced_remover
     
-    print("⚠️ SKIPPING startup model loading - Render.com memory limit")
-    print("📝 Lazy loading moduna direkt geçiliyor")
-    print("🚀 Modeller ilk API çağrısında yüklenecek")
+    print("🚀 Railway deployment - Real AI models loading...")
+    print("💪 Sufficient memory available - Loading full models")
     
-    # Startup'ta model yükleme yapmıyoruz - sadece lazy loading
-    ultra_remover = None
-    advanced_remover = None
-    
-    print("✅ Server hazır - Models lazy loading mode'da")
+    try:
+        init_removers()
+        print("🎉 AI models başarıyla yüklendi!")
+    except Exception as e:
+        print(f"⚠️ Model loading hatası: {e}")
+        print("📝 Fallback: Lazy loading moduna geçiliyor")
+        ultra_remover = None
+        advanced_remover = None
 
 # Modelleri güvenli şekilde yükle
 safe_init_removers()
