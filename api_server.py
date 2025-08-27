@@ -534,6 +534,10 @@ def safe_init_removers():
 safe_init_removers()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
-    print(f"💡 Server starting on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Başlangıçta modelleri yükle
+    print("🔄 Loading models...")
+    init_removers()
+    port = int(os.environ.get('PORT', 8000))
+    print(f"✅ Models loaded successfully!")
+    print(f"🚀 Server starting on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
