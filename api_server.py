@@ -519,22 +519,18 @@ def timeout_handler(signum, frame):
     raise TimeoutError("Model loading timeout")
 
 def safe_init_removers():
-    """Railway'de gerçek AI modelleri yükle"""
+    """Railway'de lazy loading kullan - memory tasarrufu"""
     global ultra_remover, advanced_remover
     
-    print("🚀 Railway deployment - Real AI models loading...")
-    print("💪 Sufficient memory available - Loading full models")
+    print("🚀 Railway deployment - Lazy loading mode")
+    print("💾 Memory optimization - Models loaded on demand")
     
-    try:
-        init_removers()
-        print("🎉 AI models başarıyla yüklendi!")
-    except Exception as e:
-        print(f"⚠️ Model loading hatası: {e}")
-        print("📝 Fallback: Lazy loading moduna geçiliyor")
-        ultra_remover = None
-        advanced_remover = None
+    # Railway'de memory tasarrufu için lazy loading kullan
+    ultra_remover = None
+    advanced_remover = None
+    print("✅ Lazy loading configured!")
 
-# Modelleri güvenli şekilde yükle
+# Railway için lazy loading
 safe_init_removers()
 
 if __name__ == '__main__':
