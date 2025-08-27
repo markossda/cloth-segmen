@@ -41,20 +41,11 @@ advanced_remover = None
 
 def init_removers():
     """
-    Remover'ları başlat
+    Remover'ları başlat - AI modelleri zorla yükle
     """
     global ultra_remover, advanced_remover, UltraClothingBgRemover, AdvancedClothingBgRemover
     
-    # Production'da mock mode kullan (memory limit için)
-    mock_env = os.environ.get('USE_MOCK_MODE', 'true')
-    USE_MOCK_MODE = mock_env.lower() in ['true', '1', 'yes']
-    print(f"🔧 Environment variable USE_MOCK_MODE: '{mock_env}' -> Mock mode: {USE_MOCK_MODE}")
-    
-    if USE_MOCK_MODE:
-        print("⚠️ Mock mode aktif - AI modelleri yüklenmedi (memory optimization)")
-        return
-    else:
-        print("🚀 Real AI mode aktif - AI modelleri yüklenecek")
+    print("🚀 AI modelleri zorla yükleniyor...")
     
     try:
         # AI modelleri dinamik olarak import et
@@ -69,9 +60,11 @@ def init_removers():
         print("✅ AI modelleri hazır!")
         
     except ImportError as e:
-        print(f"❌ AI modül import hatası: {e} - Mock mode aktif")
+        print(f"❌ AI modül import hatası: {e}")
+        raise e
     except Exception as e:
-        print(f"❌ Model yükleme hatası: {e} - Mock mode aktif")
+        print(f"❌ Model yükleme hatası: {e}")
+        raise e
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -192,44 +185,6 @@ def get_available_models():
         'default': 'ultra'
     })
 
-def mock_process_image(filepath, options=None):
-    """
-    Mock image processing for testing
-    """
-    # Basit bir işlem simülasyonu
-    time.sleep(0.5)  # İşlem zamanı simülasyonu (kısa)
-    
-    # Orijinal dosyayı kopyala ve _processed ekle
-    base_name = os.path.splitext(filepath)[0]
-    processed_path = f"{base_name}_processed.png"
-    
-    try:
-        # Orijinal resmi aç ve şeffaf arkaplan yap
-        original_img = Image.open(filepath).convert('RGBA')
-        width, height = original_img.size
-        
-        # Mock processing: merkezi nesneyi koru, kenarları şeffaf yap
-        img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-        
-        # Merkezi alanı koru (basit mock)
-        center_x, center_y = width // 2, height // 2
-        margin = min(width, height) // 4
-        
-        # Merkezi kısmı kopyala
-        for x in range(max(0, center_x - margin), min(width, center_x + margin)):
-            for y in range(max(0, center_y - margin), min(height, center_y + margin)):
-                img.putpixel((x, y), original_img.getpixel((x, y)))
-        
-        img.save(processed_path)
-        print(f"📷 Mock processing completed: {processed_path}")
-        
-    except Exception as e:
-        print(f"❌ Mock processing error: {e}")
-        # Fallback: basit şeffaf resim
-        img = Image.new('RGBA', (100, 100), (0, 0, 0, 0))
-        img.save(processed_path)
-    
-    return processed_path
 
 @app.route('/api/remove-background', methods=['POST'])
 def remove_background():
@@ -273,8 +228,13 @@ def remove_background():
         
         start_time = time.time()
         
-        # Model seçimi ve işlem
-        if model_type == 'ultra' and ultra_remover:
+        # Model seçimi ve işlem - Sadece gerçek AI modelleri
+        if model_type == 'ultra':
+            if not ultra_remover:
+                return jsonify({
+                    'success': False,
+                    'error': 'Ultra model yüklenmedi'
+                }), 500
             options = {
                 'ai_positioning': True,
                 'enhance': enhance,
@@ -283,7 +243,12 @@ def remove_background():
             }
             result_path = ultra_remover.ultra_process(filepath, options)
             used_model = ultra_remover.best_model
-        elif model_type == 'advanced' and advanced_remover:
+        elif model_type == 'advanced':
+            if not advanced_remover:
+                return jsonify({
+                    'success': False,
+                    'error': 'Advanced model yüklenmedi'
+                }), 500
             options = {
                 'preprocess': True,
                 'fix_positioning': True,
@@ -295,10 +260,10 @@ def remove_background():
             result_path = advanced_remover.process_clothing_complete(filepath, options)
             used_model = advanced_remover.model_name
         else:
-            # Mock processing
-            options = {'model': model_type, 'positioning': positioning}
-            result_path = mock_process_image(filepath, options)
-            used_model = f'mock_{model_type}'
+            return jsonify({
+                'success': False,
+                'error': 'Geçersiz model türü'
+            }), 400
         
         process_time = time.time() - start_time
         
@@ -383,8 +348,13 @@ def remove_background_base64():
         
         start_time = time.time()
         
-        # İşlem
-        if model_type == 'ultra' and ultra_remover:
+        # İşlem - Sadece gerçek AI modelleri
+        if model_type == 'ultra':
+            if not ultra_remover:
+                return jsonify({
+                    'success': False,
+                    'error': 'Ultra model yüklenmedi'
+                }), 500
             options = {
                 'ai_positioning': True,
                 'enhance': enhance,
@@ -393,7 +363,12 @@ def remove_background_base64():
             }
             result_path = ultra_remover.ultra_process(filepath, options)
             used_model = ultra_remover.best_model
-        elif model_type == 'advanced' and advanced_remover:
+        elif model_type == 'advanced':
+            if not advanced_remover:
+                return jsonify({
+                    'success': False,
+                    'error': 'Advanced model yüklenmedi'
+                }), 500
             options = {
                 'preprocess': True,
                 'fix_positioning': True,
@@ -405,10 +380,10 @@ def remove_background_base64():
             result_path = advanced_remover.process_clothing_complete(filepath, options)
             used_model = advanced_remover.model_name
         else:
-            # Mock processing
-            options = {'model': model_type, 'positioning': positioning}
-            result_path = mock_process_image(filepath, options)
-            used_model = f'mock_{model_type}'
+            return jsonify({
+                'success': False,
+                'error': 'Geçersiz model türü'
+            }), 400
         
         process_time = time.time() - start_time
         
