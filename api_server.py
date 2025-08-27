@@ -49,15 +49,11 @@ def init_removers():
     print("💾 Memory usage check - başlangıç")
     
     try:
-        # AI modelleri dinamik olarak import et
-        print("🔄 AI modüllerini import ediliyor...")
-        print("📦 UltraClothingBgRemover import ediliyor...")
-        from ultra_clothing_bg_remover import UltraClothingBgRemover
-        print("✅ UltraClothingBgRemover import edildi")
-        
-        print("📦 AdvancedClothingBgRemover import ediliyor...")
-        from advanced_clothing_bg_remover import AdvancedClothingBgRemover
-        print("✅ AdvancedClothingBgRemover import edildi")
+        # Lightweight clothing remover import et
+        print("🔄 Clothing AI modüllerini import ediliyor...")
+        print("📦 ClothingRemover import ediliyor...")
+        from clothing_remover import UltraClothingBgRemover, AdvancedClothingBgRemover
+        print("✅ Clothing modülleri import edildi")
         
         print("✅ Tüm AI modülleri import edildi")
         
@@ -260,7 +256,7 @@ def remove_background():
             if not ultra_remover:
                 print("🔄 Lazy loading: Ultra model yükleniyor...")
                 try:
-                    from ultra_clothing_bg_remover import UltraClothingBgRemover
+                    from clothing_remover import UltraClothingBgRemover
                     ultra_remover = UltraClothingBgRemover()
                     print("✅ Ultra model lazy loading tamamlandı")
                 except Exception as e:
@@ -281,7 +277,7 @@ def remove_background():
             if not advanced_remover:
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
-                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+                    from clothing_remover import AdvancedClothingBgRemover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
@@ -410,7 +406,7 @@ def remove_background_base64():
             if not advanced_remover:
                 print("🔄 Lazy loading: Advanced model yükleniyor...")
                 try:
-                    from advanced_clothing_bg_remover import AdvancedClothingBgRemover
+                    from clothing_remover import AdvancedClothingBgRemover
                     advanced_remover = AdvancedClothingBgRemover('u2net_cloth_seg')
                     print("✅ Advanced model lazy loading tamamlandı")
                 except Exception as e:
